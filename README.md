@@ -1,10 +1,8 @@
 Personal Blog created in Yii2 freamework
 ============================
 
-A personal blog where you can add articles, 
-edit them in the admin area, 
-the ability to browse by category and more...
+<p>A personal blog where you can add articles,</p>
+<p>edit them in the admin area, </p>
+<p>the ability to browse by category and more...</p>
 
-![Image alt](https://github.com/{mishaTeplyakov}/{myBlog}/raw/{master}/{image}/1.jpg)
-![Image alt](https://github.com/{mishaTeplyakov}/{myBlog}/raw/{master}/{image}/2.jpg)
-![Image alt](https://github.com/{mishaTeplyakov}/{myBlog}/raw/{master}/{image}/3.jpg)
+![Image alt](https://github.com/mishaTeplyakov/myBlog/raw/master/image/1.png)
