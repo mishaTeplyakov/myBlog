@@ -28,3 +28,5 @@ phpunit.phar
 
 tests/_output/*
 tests/_support/_generated
+migrations/m170930_114526_add_date_to_comment.php
+web/uploads/8654d51b81071bc77a58617d6477c582.jpg
