@@ -2,7 +2,11 @@
 
 namespace app\controllers;
 
+use app\models\Article;
+use app\models\Category;
+use app\models\CommentForm;
 use Yii;
+use yii\data\Pagination;
 use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\web\Response;
@@ -61,7 +65,19 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        return $this->render('index');
+        $data = Article::getAll();
+        $popular = Article::getPopular();
+        $recent = Article::getRecent();
+        $category = Category::find()->all();
+
+        return $this->render('index', [
+            'models' => $data['articles'],
+            'pages' => $data['pagination'],
+            'popular' => $popular,
+            'recent' => $recent,
+            'category' => $category,
+        ]);
+
     }
 
     /**
@@ -84,6 +100,59 @@ class SiteController extends Controller
         ]);
     }
 
+    public function actionView($id){
+        $article = Article::findOne($id);
+
+        $popular = Article::getPopular();
+        $recent = Article::getRecent();
+        $category = Category::find()->all();
+        $comments = $article->comment;
+        $commentForm = new CommentForm();
+
+        $article->viewedCount();
+
+        return $this->render('single',[
+            'article' => $article,
+            'popular' => $popular,
+            'recent' => $recent,
+            'category' => $category,
+            'comments' => $comments,
+            'commentForm' =>$commentForm
+        ]);
+    }
+
+    public function actionCategory($id){
+
+        $query = Article::find()->where(['category_id'=>$id]);
+
+        $popular = Article::getPopular();
+        $recent = Article::getRecent();
+        $category = Category::find()->all();
+
+        $countQuery = clone $query;
+
+        $pages = new Pagination([
+            'totalCount' => $countQuery->count(),
+            'pageSize' => 6,
+        ]);
+
+        $models = $query
+            ->offset($pages->offset) //кол-во записей которые можно выбрать назад
+            ->limit($pages->limit)
+            ->all();
+
+        $data ['articles'] = $models;
+        $data ['pagination'] = $pages;
+
+        return $this->render('category',[
+            'articles'=>$data['articles'],
+            'pagination'=>$data['pagination'],
+            'popular' => $popular,
+            'recent' => $recent,
+            'category' => $category,
+        ]);
+    }
+
     /**
      * Logout action.
      *
@@ -101,8 +170,7 @@ class SiteController extends Controller
      *
      * @return Response|string
      */
-    public function actionContact()
-    {
+    public function actionContact(){
         $model = new ContactForm();
         if ($model->load(Yii::$app->request->post()) && $model->contact(Yii::$app->params['adminEmail'])) {
             Yii::$app->session->setFlash('contactFormSubmitted');
@@ -119,8 +187,26 @@ class SiteController extends Controller
      *
      * @return string
      */
-    public function actionAbout()
-    {
+    public function actionAbout(){
         return $this->render('about');
+    }
+
+
+    public function actionSearch(){
+        $q = trim(Yii::$app->request->get('q'));
+        $query = Category::find()->where(['like','title',$q])->all();
+
+        return $this->render('search', compact('query'));
+    }
+
+    public function actionComment($id){
+        $model = new CommentForm();
+
+        if(Yii::$app->request->isPost){
+            $model->load(Yii::$app->request->post());
+            if ($model->saveComment($id)){
+                return $this->redirect(['site/view','id'=>$id]);
+            }
+        }
     }
 }
