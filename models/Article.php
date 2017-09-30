@@ -3,6 +3,8 @@
 namespace app\models;
 
 use Yii;
+use yii\data\Pagination;
+use yii\helpers\ArrayHelper;
 
 /**
  * This is the model class for table "article".
@@ -108,4 +110,91 @@ class Article extends \yii\db\ActiveRecord
     {
         return $this->hasOne(Category::className(), ['id' => 'category_id']);
     }
+
+    public function saveCategory($category_id){
+
+        $category = Category::findOne($category_id);
+        if($category != null){
+            $this->link('category', $category);
+            return true;
+        }
+        $this->link('category', $category);
+    }
+
+    public function getTags()
+    {
+        return $this->hasMany(Tag::className(), ['id' => 'tag_id'])
+            ->viaTable('article_tag', ['article_id' => 'id']);
+    }
+
+    public function getSelectedTags(){
+        $selectedTags = $this->getTags()->select('id')->asArray()->all();
+        return ArrayHelper::getColumn($selectedTags,'id');
+    }
+
+    public function saveTags($tags){
+        if(is_array($tags)){
+
+            ArticleTag::deleteAll(['article_id'=>$this->id]);
+
+            foreach ($tags as $tag_id){
+                $tag = Tag::findOne($tag_id);
+                $this->link('tags',$tag);
+            }
+        }
+    }
+
+    public function getDate(){
+        //Yii::$app->formatter->locale = 'ru-RU';
+        return Yii::$app->formatter->asDate($this->date);
+    }
+
+    public static function getAll(){
+        $query = Article::find();
+
+        $countQuery = clone $query;
+
+        $pages = new Pagination([
+            'totalCount' => $countQuery->count(),
+            'pageSize' => 5,
+        ]);
+
+        $models = $query
+            ->offset($pages->offset) //кол-во записей которые можно выбрать назад
+            ->limit($pages->limit)
+            ->all();
+
+        $data ['articles'] = $models;
+        $data ['pagination'] = $pages;
+
+        return $data;
+    }
+
+    public static function getPopular(){
+        return Article::find()->orderBy('viewed desc')->all();
+    }
+
+    public static function getRecent(){
+        return Article::find()->orderBy('date asc')->all();
+    }
+
+    public function saveArticle(){
+        $this->user_id = Yii::$app->user->id;
+        return $this->save();
+    }
+
+    public function getComment(){
+        return $this->hasMany(Comment::className(),['article_id' => 'id']);
+    }
+
+    public function getAuthor(){
+        return $this->hasOne(User::className(),['id'=>'user_id']);
+    }
+
+    public function viewedCount(){
+        $this->viewed+=1;
+        return $this->save(false);
+    }
 }
+
+
