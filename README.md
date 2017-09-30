@@ -2,7 +2,7 @@ Personal Blog created in Yii2 freamework
 ============================
 
 <p>A personal blog where you can add articles,</p>
-edit them in the admin area, 
-the ability to browse by category and more...
+<p>edit them in the admin area, </p>
+<p>the ability to browse by category and more...</p>
 
 ![Image alt](https://github.com/mishaTeplyakov/myBlog/raw/master/image/1.png)
